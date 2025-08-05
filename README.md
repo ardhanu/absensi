@@ -2,6 +2,15 @@
 
 Attendify adalah aplikasi absensi berbasis Flutter yang dikembangkan sebagai bagian dari tes rekrutmen untuk PT Trimitra Putra Mandiri.
 
+## Preview
+<img width="144" height="256" alt="Image" src="https://github.com/user-attachments/assets/5784b716-373a-4a91-95d7-ffa416a650c9" /> 
+
+<img width="144" height="256" alt="Image" src="https://github.com/user-attachments/assets/604c9017-93d0-4839-a4ed-1838de861f5f" />
+
+<img width="144" height="256" alt="Image" src="https://github.com/user-attachments/assets/898e9318-546f-4f0b-a945-3349cdde4f06" />
+
+<img width="144" height="256" alt="Image" src="https://github.com/user-attachments/assets/dcbcc9c4-af88-402b-9f39-a21d277d4ca6" />
+
 ## Deskripsi Project
 
 Project ini bertujuan untuk mendemonstrasikan kemampuan dalam membangun aplikasi mobile menggunakan Flutter, dengan fitur utama berupa sistem absensi karyawan yang terintegrasi dengan backend API.
