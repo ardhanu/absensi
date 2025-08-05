@@ -25,7 +25,6 @@ Project ini bertujuan untuk mendemonstrasikan kemampuan dalam membangun aplikasi
 - **Fitur Absensi Lengkap:**  
   - Check-in dan check-out dengan validasi lokasi.
   - Riwayat absensi lengkap dengan detail status (masuk, izin, telat, dsb).
-  - Reset password dan lupa password dengan OTP.
 
 - **Arsitektur Modular:**  
   Struktur kode dipisahkan dengan baik antara layer presentasi, data, dan service, sehingga mudah untuk dikembangkan lebih lanjut.
