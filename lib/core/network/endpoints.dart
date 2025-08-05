@@ -1,5 +1,5 @@
 class Endpoint {
-  static final String baseUrl = 'https://9ef65db53952.ngrok-free.app/api';
+  static final String baseUrl = 'https://fda6598557ff.ngrok-free.app/api';
   static final String register = '$baseUrl/auth/register';
   static final String login = '$baseUrl/auth/login';
   static final String allHistoryAbsen = '$baseUrl/attendance/history';
