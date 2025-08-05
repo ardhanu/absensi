@@ -63,4 +63,37 @@ class MapsServices {
     if (position == null) return null;
     return getAddressFromLatLng(position);
   }
+
+  /// Validasi apakah user berada dalam jarak yang diizinkan (100 meter)
+  static Future<bool> isWithinAllowedDistance() async {
+    final distance = await getDistanceFromOffice();
+    if (distance == null) return false;
+
+    // Jarak maksimal yang diizinkan: 100 meter
+    const double maxAllowedDistance = 100.0;
+    return distance <= maxAllowedDistance;
+  }
+
+  /// Mendapatkan jarak dan status validasi dalam satu method
+  static Future<Map<String, dynamic>> getDistanceAndValidation() async {
+    final distance = await getDistanceFromOffice();
+    if (distance == null) {
+      return {
+        'distance': null,
+        'isWithinRange': false,
+        'message': 'Tidak dapat mendapatkan lokasi',
+      };
+    }
+
+    const double maxAllowedDistance = 100.0;
+    final isWithinRange = distance <= maxAllowedDistance;
+
+    return {
+      'distance': distance,
+      'isWithinRange': isWithinRange,
+      'message': isWithinRange
+          ? 'Anda berada dalam jarak yang diizinkan'
+          : 'Anda berada di luar jarak yang diizinkan (maksimal 100m)',
+    };
+  }
 }

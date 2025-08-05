@@ -33,6 +33,11 @@ class _MapsPageState extends State<MapsPage> {
   File? _checkInPhoto;
   bool _isTakingPhoto = false;
 
+  // Distance validation variables
+  double? _distanceFromOffice;
+  bool _isWithinAllowedDistance = false;
+  String _distanceMessage = '';
+
   @override
   void initState() {
     super.initState();
@@ -72,6 +77,9 @@ class _MapsPageState extends State<MapsPage> {
 
       await _getAddressFromLatLng(position);
 
+      // Check distance validation
+      await _checkDistanceValidation();
+
       setState(() {
         _loading = false;
       });
@@ -87,6 +95,23 @@ class _MapsPageState extends State<MapsPage> {
       setState(() {
         _loading = false;
         _errorMessage = errorMsg;
+      });
+    }
+  }
+
+  Future<void> _checkDistanceValidation() async {
+    try {
+      final validationResult = await MapsServices.getDistanceAndValidation();
+      setState(() {
+        _distanceFromOffice = validationResult['distance'];
+        _isWithinAllowedDistance = validationResult['isWithinRange'];
+        _distanceMessage = validationResult['message'];
+      });
+    } catch (e) {
+      setState(() {
+        _distanceFromOffice = null;
+        _isWithinAllowedDistance = false;
+        _distanceMessage = 'Gagal memvalidasi jarak: $e';
       });
     }
   }
@@ -194,6 +219,20 @@ class _MapsPageState extends State<MapsPage> {
       return;
     }
 
+    // Validasi jarak dari kantor (maksimal 100 meter)
+    if (!_isWithinAllowedDistance) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text(
+            'Anda berada di luar jarak yang diizinkan untuk absen. Maksimal 100 meter dari kantor.',
+          ),
+          backgroundColor: Colors.red,
+          duration: Duration(seconds: 4),
+        ),
+      );
+      return;
+    }
+
     // Pastikan sudah foto sebelum check in
     if (_checkInPhoto == null) {
       ScaffoldMessenger.of(context).showSnackBar(
@@ -278,6 +317,20 @@ class _MapsPageState extends State<MapsPage> {
     if (_currentAddress == null || _currentAddress!.trim().isEmpty) {
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(content: Text('Alamat belum tersedia. Coba refresh lokasi.')),
+      );
+      return;
+    }
+
+    // Validasi jarak dari kantor (maksimal 100 meter)
+    if (!_isWithinAllowedDistance) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text(
+            'Anda berada di luar jarak yang diizinkan untuk absen. Maksimal 100 meter dari kantor.',
+          ),
+          backgroundColor: Colors.red,
+          duration: Duration(seconds: 4),
+        ),
       );
       return;
     }
@@ -641,6 +694,64 @@ class _MapsPageState extends State<MapsPage> {
                         ),
                       ],
                     ),
+                    const SizedBox(height: 6),
+                    // Distance information
+                    Row(
+                      children: [
+                        Text(
+                          'Jarak: ',
+                          style: GoogleFonts.lexend(
+                            fontSize: 13,
+                            fontWeight: FontWeight.w500,
+                            color: Colors.black87,
+                          ),
+                        ),
+                        Text(
+                          _distanceFromOffice != null
+                              ? '${_distanceFromOffice!.toStringAsFixed(1)}m dari kantor'
+                              : 'Menghitung...',
+                          style: GoogleFonts.lexend(
+                            fontSize: 13,
+                            fontWeight: FontWeight.w700,
+                            color: _isWithinAllowedDistance
+                                ? Colors.green
+                                : (_distanceFromOffice != null
+                                      ? Colors.red
+                                      : Colors.grey),
+                          ),
+                        ),
+                      ],
+                    ),
+                    if (_distanceFromOffice != null)
+                      Padding(
+                        padding: const EdgeInsets.only(top: 4),
+                        child: Row(
+                          children: [
+                            Icon(
+                              _isWithinAllowedDistance
+                                  ? Icons.check_circle
+                                  : Icons.cancel,
+                              size: 16,
+                              color: _isWithinAllowedDistance
+                                  ? Colors.green
+                                  : Colors.red,
+                            ),
+                            SizedBox(width: 4),
+                            Expanded(
+                              child: Text(
+                                _distanceMessage,
+                                style: GoogleFonts.lexend(
+                                  fontSize: 12,
+                                  color: _isWithinAllowedDistance
+                                      ? Colors.green
+                                      : Colors.red,
+                                  fontWeight: FontWeight.w500,
+                                ),
+                              ),
+                            ),
+                          ],
+                        ),
+                      ),
                   ],
                 ),
                 const SizedBox(height: 16),
@@ -861,7 +972,8 @@ class _MapsPageState extends State<MapsPage> {
                                 _isCheckingIn ||
                                     _isCheckingOut ||
                                     isIzin ||
-                                    isCheckedOut
+                                    isCheckedOut ||
+                                    !_isWithinAllowedDistance
                                 ? null
                                 : (canCheckOut
                                       ? _handleCheckOut
@@ -872,16 +984,20 @@ class _MapsPageState extends State<MapsPage> {
                                       ? 'Checking Out...'
                                       : (isCheckedOut
                                             ? 'Sudah Check Out'
-                                            : (canCheckOut
-                                                  ? 'Check Out'
-                                                  : 'Check In'))),
+                                            : (!_isWithinAllowedDistance
+                                                  ? 'Jarak Terlalu Jauh'
+                                                  : (canCheckOut
+                                                        ? 'Check Out'
+                                                        : 'Check In')))),
                             minWidth: double.infinity,
                             height: 45,
                             backgroundColor: isCheckedOut
                                 ? Colors.grey
-                                : (canCheckOut
-                                      ? Colors.blue
-                                      : AppColors.primary),
+                                : (!_isWithinAllowedDistance
+                                      ? Colors.red
+                                      : (canCheckOut
+                                            ? Colors.blue
+                                            : AppColors.primary)),
                             foregroundColor: AppColors.text,
                             borderRadius: BorderRadius.circular(10),
                             icon: _isCheckingIn || _isCheckingOut
@@ -895,7 +1011,9 @@ class _MapsPageState extends State<MapsPage> {
                                   )
                                 : (isCheckedOut
                                       ? Icon(Icons.check_circle, size: 20)
-                                      : null),
+                                      : (!_isWithinAllowedDistance
+                                            ? Icon(Icons.location_off, size: 20)
+                                            : null)),
                           ),
                         ),
                         SizedBox(width: 12),
