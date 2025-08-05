@@ -32,9 +32,6 @@ Project ini bertujuan untuk mendemonstrasikan kemampuan dalam membangun aplikasi
 - **Custom Widget Reusable:**  
   Banyak komponen dibuat sebagai custom widget agar mudah digunakan ulang di berbagai halaman.
 
-- **Dukungan Notifikasi:**  
-  Sudah terintegrasi dengan OneSignal untuk pengiriman notifikasi (dapat dikembangkan lebih lanjut).
-
 - **Validasi Form yang Baik:**  
   Setiap form (register, login, reset password) sudah dilengkapi validasi yang jelas dan user-friendly.
 
